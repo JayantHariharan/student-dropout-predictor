@@ -21,7 +21,7 @@ first/second-semester academic records. This is a **3-class (multi-class)** clas
 
 ## c. Repository and live app
 - GitHub repository: <https://github.com/JayantHariharan/student-dropout-predictor>
-- Live app (Streamlit Community Cloud): `<fill in after deploying - see "Deploying" below>`
+- Live app (Streamlit Community Cloud): <https://student-dropout-predictor-ml.streamlit.app/>
 
 ## d. Models used
 <!-- METRICS_TABLE:START -->
@@ -34,23 +34,27 @@ first/second-semester academic records. This is a **3-class (multi-class)** clas
 | Support Vector Machine | 0.7593 | 0.8681 | 0.7467 | 0.7593 | 0.7458 | 0.6002 |
 <!-- METRICS_TABLE:END -->
 
+**How the metrics are computed (3-class problem):** Accuracy and MCC are computed directly on the
+predicted labels. Precision, Recall and F1 use *weighted* averaging (per-class scores averaged by class
+support), which accounts for the imbalance between Graduate, Dropout and Enrolled. AUC is *one-vs-rest*
+(each class against the rest), weighted-averaged, and uses each model's predicted probabilities. All
+numbers are measured on the held-out 20% test split (885 rows); no model is retrained on it.
+
 ### Observations
-<!-- OBSERVATIONS:START -->
 | ML Model Name | Observation about model performance |
 |---|---|
-| Logistic Regression | Best performer overall - rank 1 of 5 by MCC (0.6150), also leads on Accuracy (0.7684) and F1 (0.7531). |
-| Decision Tree | Mid-table - rank 3 of 5 by MCC (0.5480), Accuracy 0.7243. |
-| KNN | Mid-table - rank 4 of 5 by MCC (0.4529), Accuracy 0.6734. |
-| Naive Bayes | Weakest of the 5 models here - lowest MCC (0.4279) and F1 (0.6417). |
-| Support Vector Machine | Mid-table - rank 2 of 5 by MCC (0.6002), Accuracy 0.7593. |
-| **Overall winner** | **Logistic Regression** - highest MCC (0.6150), which (unlike raw accuracy) is not inflated by class imbalance. |
-<!-- OBSERVATIONS:END -->
+| Logistic Regression | Best on every metric (Accuracy 0.7684, AUC 0.8961, F1 0.7531, MCC 0.6150). After standardisation the academic features (units approved/enrolled/grade per semester) relate to the outcome close to linearly, so a simple linear model fits well and generalises without overfitting. It catches 92.5% of Graduates and 76.8% of Dropouts, but only 33.3% of Enrolled students. |
+| Decision Tree | Third by MCC (0.5480), Accuracy 0.7243. Depth is capped (`max_depth=8`, `min_samples_leaf=5`) to limit overfitting, yet it still trails the linear models. It is the best of the five at the hard Enrolled class (recall 0.421) likely because it can isolate rule-like patterns, but it is less accurate on Dropout (0.683) and Graduate (0.860). Easy to interpret, less stable. |
+| KNN | Fourth by MCC (0.4529), Accuracy 0.6734. With 36 features plus one-hot encoded categories, distances become less meaningful (curse of dimensionality), so neighbours are noisy. Recall on Enrolled is only 0.208 because that minority class is outvoted by the larger classes in each neighbourhood (k=7). |
+| Naive Bayes | Weakest model: lowest MCC (0.4279), Accuracy 0.6588, F1 0.6417. Gaussian NB assumes features are independent, but many are strongly correlated (e.g. 1st- and 2nd-semester approved units correlate about 0.90 in the data), so probabilities are poorly calibrated. Enrolled recall is just 0.182. It is the fastest model to train. |
+| Support Vector Machine | Second by MCC (0.6002), Accuracy 0.7593, close to Logistic Regression (Graduate recall 0.925, Dropout 0.732) but slightly lower on AUC (0.8681 vs 0.8961). The RBF kernel adds flexibility but no real gain here, and its probabilities come from Platt-scaled calibration, which may cost some AUC. Larger and slower than Logistic Regression for no improvement. |
+| **Overall winner** | **Logistic Regression** - highest on all six metrics, including MCC (0.6150), which is more robust to class imbalance than accuracy. It is also the simplest, smallest and fastest model, so it wins on performance and practicality. A shared weakness of all five models is the Enrolled class (17.9% of data): best recall is only 0.421, so a future improvement would be class weighting or resampling. |
 
 ## Project structure
 ```
 app.py              Streamlit UI - loads saved models, never trains
 utils.py             shared validation + metrics helpers (unit-tested on their own)
-train_models.py      one-time local training script; also refreshes this README
+train_models.py      one-time local training script; refreshes the dataset and metrics-table sections of this README
 requirements.txt     pinned dependencies (scikit-learn is pinned to the version models were saved with)
 data/
   raw.csv            permanent input dataset - never deleted or regenerated
@@ -64,12 +68,6 @@ tests/
   test_app_smoke.py   headless Streamlit AppTest smoke test for the UI
 ```
 
-**Why `data/raw.csv` is kept and `model/` + the generated CSVs are not committed as "final" artifacts
-you hand-edit:** `raw.csv` is the one fixed input; everything else (`train_data.csv`, `test_data.csv`,
-the `model/` folder, `metrics_table.csv`) is *output* of running `train_models.py` and is fully
-reproducible from `raw.csv` with a fixed random seed. Re-running training always deletes the previous
-`model/` folder and the previous generated CSVs first (see `reset_outputs()` in `train_models.py`), so
-there is never a mix of old and new model files left behind by mistake.
 
 ## How to run this locally
 ```bash
