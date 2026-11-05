@@ -13,6 +13,7 @@ import shutil
 
 import joblib
 import pandas as pd
+from sklearn.calibration import CalibratedClassifierCV
 from sklearn.compose import ColumnTransformer
 from sklearn.impute import SimpleImputer
 from sklearn.linear_model import LogisticRegression
@@ -55,7 +56,12 @@ def get_models():
         "Decision Tree": DecisionTreeClassifier(max_depth=8, min_samples_leaf=5, random_state=SEED),
         "KNN": KNeighborsClassifier(n_neighbors=7),
         "Naive Bayes": GaussianNB(),
-        "Support Vector Machine": SVC(kernel="rbf", probability=True, random_state=SEED),
+        # CalibratedClassifierCV wraps a plain SVC to get predict_proba via cross-validated
+        # Platt scaling - SVC(probability=True) does the same thing internally but is
+        # deprecated in sklearn 1.9+ in favour of this explicit, inspectable form.
+        "Support Vector Machine": CalibratedClassifierCV(
+            SVC(kernel="rbf", random_state=SEED), method="sigmoid", cv=5, ensemble=False
+        ),
     }
 
 

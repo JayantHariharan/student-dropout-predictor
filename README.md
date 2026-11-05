@@ -31,7 +31,7 @@ first/second-semester academic records. This is a **3-class (multi-class)** clas
 | Decision Tree | 0.7243 | 0.8534 | 0.7205 | 0.7243 | 0.7216 | 0.5480 |
 | KNN | 0.6734 | 0.8154 | 0.6530 | 0.6734 | 0.6576 | 0.4529 |
 | Naive Bayes | 0.6588 | 0.8118 | 0.6334 | 0.6588 | 0.6417 | 0.4279 |
-| Support Vector Machine | 0.7582 | 0.8865 | 0.7465 | 0.7582 | 0.7454 | 0.5986 |
+| Support Vector Machine | 0.7593 | 0.8681 | 0.7467 | 0.7593 | 0.7458 | 0.6002 |
 <!-- METRICS_TABLE:END -->
 
 ### Observations
@@ -42,7 +42,7 @@ first/second-semester academic records. This is a **3-class (multi-class)** clas
 | Decision Tree | Mid-table - rank 3 of 5 by MCC (0.5480), Accuracy 0.7243. |
 | KNN | Mid-table - rank 4 of 5 by MCC (0.4529), Accuracy 0.6734. |
 | Naive Bayes | Weakest of the 5 models here - lowest MCC (0.4279) and F1 (0.6417). |
-| Support Vector Machine | Mid-table - rank 2 of 5 by MCC (0.5986), Accuracy 0.7582. |
+| Support Vector Machine | Mid-table - rank 2 of 5 by MCC (0.6002), Accuracy 0.7593. |
 | **Overall winner** | **Logistic Regression** - highest MCC (0.6150), which (unlike raw accuracy) is not inflated by class imbalance. |
 <!-- OBSERVATIONS:END -->
 
